@@ -71,15 +71,24 @@ const UIManager = {
         document.querySelectorAll('.screen').forEach(screen => {
             screen.classList.remove('active');
         });
-        document.getElementById(screenId).classList.add('active');
+
+        const screenElement = document.getElementById(screenId);
+        if (screenElement) {
+            screenElement.classList.add('active');
+        } else {
+            console.error('[UI MANAGER] Screen not found:', screenId);
+        }
+
         AppState.currentScreen = screenId;
 
         // Show/hide home button
         const homeBtn = document.querySelector('.home-btn');
-        if (screenId === 'home-screen') {
-            homeBtn.style.display = 'none';
-        } else {
-            homeBtn.style.display = 'flex';
+        if (homeBtn) {
+            if (screenId === 'home-screen') {
+                homeBtn.style.display = 'none';
+            } else {
+                homeBtn.style.display = 'flex';
+            }
         }
     },
 

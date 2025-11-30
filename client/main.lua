@@ -150,7 +150,18 @@ end)
 -- NUI Callbacks
 RegisterNUICallback('close', function(data, cb)
     print('[GASMANAGER] NUI close callback received')
+    
+    -- CRITICAL: Complete NUI focus release (same as /gasfix)
+    SetNuiFocus(false, false)
+    SetNuiFocusKeepInput(false)
+    
+    -- Force enable all controls immediately
+    EnableAllControlActions(0)
+    
+    -- Respond to NUI
     cb('ok')
+    
+    -- Clean up tablet state
     ToggleTablet(false)
 end)
 

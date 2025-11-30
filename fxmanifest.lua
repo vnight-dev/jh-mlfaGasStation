@@ -2,7 +2,7 @@ fx_version 'cerulean'
 game 'gta5'
 
 description 'MLFA GasStation - Gas Station Management System with AI Customers'
-version '2.1.0'
+version '2.2.0'
 author 'MLFA'
 
 shared_scripts {
@@ -16,11 +16,13 @@ client_scripts {
     'client/purchase.lua',
     'client/missions.lua',
     'client/fuel_tracking.lua',
-    'client/ped_customers.lua'     -- NPC customer system
+    'client/ped_customers.lua',    -- NPC customer system
+    'client/debug_commands.lua'    -- Debug commands (if enabled)
 }
 
 server_scripts {
     '@oxmysql/lib/MySQL.lua',
+    'server/discord_logs.lua',     -- Discord logging (LOAD FIRST)
     'server/main.lua',
     'server/database.lua',
     'server/fuel_integration.lua',

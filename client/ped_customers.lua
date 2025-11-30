@@ -7,52 +7,21 @@
 local PerfUtils = _G.PerfUtils or require('client.perf_utils')
 
 -- ============================================================================
--- CONFIGURATION
+-- CONFIGURATION (from config.lua)
 -- ============================================================================
 
-local NPCConfig = {
-    enabled = true,
-    streamRadius = 120.0,      -- Spawn NPCs only if player within this radius
-    poolSize = 8,              -- Maximum concurrent NPCs
-    maxPerStation = 3,         -- Max NPCs per station at once
-    
-    -- Spawn rates (NPCs per minute)
-    spawnRates = {
-        night = 2,     -- 00:00 - 06:00
-        morning = 8,   -- 06:00 - 09:00
-        day = 5,       -- 09:00 - 17:00
-        evening = 10,  -- 17:00 - 22:00
-        late = 4       -- 22:00 - 00:00
-    },
-    
-    -- Behavior timing
-    waitAtPumpMs = 8000,       -- Time to "fuel up"
-    paymentTimeMs = 3000,      -- Time at payment
-    
-    -- Ped models (variety)
-    pedModels = {
-        'a_m_m_business_01',
-        'a_f_y_business_01',
-        'a_m_y_business_01',
-        'a_f_m_business_02',
-        'a_m_m_fatlatin_01',
-        's_m_m_trucker_01',
-        'a_f_y_hipster_01',
-        'a_m_y_hipster_01'
-    },
-    
-    -- Vehicle models for NPCs
-    vehicleModels = {
-        'blista',
-        'dilettante',
-        'issi2',
-        'panto',
-        'prairie',
-        'asea',
-        'emperor',
-        'fugitive'
-    }
-}
+-- Vérifier si le système NPC est activé
+if not Config.NPC.Enabled then
+    print('[NPC] System disabled in config')
+    return
+end
+
+-- Logs de debug
+local function debugLog(category, message)
+    if Config.Debug.Enabled and Config.Debug.Logs.NPC then
+        print('[NPC] [' .. category .. '] ' .. message)
+    end
+end
 
 -- ============================================================================
 -- STATE MANAGEMENT
@@ -81,9 +50,10 @@ end
 
 -- Calculate spawn interval based on time
 local function getSpawnInterval()
-    local period = getTimePeriod()
-    local rate = NPCConfig.spawnRates[period]
-    return (60000 / rate) -- Convert NPCs/min to ms between spawns
+    -- Utiliser un intervalle fixe basé sur Config.NPC.SpawnInterval
+    local min = Config.NPC.SpawnInterval.Min * 1000
+    local max = Config.NPC.SpawnInterval.Max * 1000
+    return math.random(min, max)
 end
 
 -- ============================================================================
@@ -94,8 +64,8 @@ end
 local function initPedPool()
     print('[NPC] Initializing ped pool...')
     
-    for i = 1, NPCConfig.poolSize do
-        local modelName = NPCConfig.pedModels[math.random(#NPCConfig.pedModels)]
+    for i = 1, Config.NPC.PedPoolSize do
+        local modelName = Config.NPC.PedModels[math.random(#Config.NPC.PedModels)]
         local modelHash = GetHashKey(modelName)
         
         RequestModel(modelHash)
@@ -136,8 +106,8 @@ end
 local function initVehiclePool()
     print('[NPC] Initializing vehicle pool...')
     
-    for i = 1, NPCConfig.poolSize do
-        local modelName = NPCConfig.vehicleModels[math.random(#NPCConfig.vehicleModels)]
+    for i = 1, Config.NPC.VehiclePoolSize do
+        local modelName = Config.NPC.VehicleModels[math.random(#Config.NPC.VehicleModels)]
         local modelHash = GetHashKey(modelName)
         
         print('[NPC] Loading vehicle model: ' .. modelName)
@@ -295,7 +265,7 @@ local function runCustomerFlow(station)
     
     -- Fueling animation
     TaskStartScenarioInPlace(ped, "WORLD_HUMAN_STAND_IMPATIENT", 0, true)
-    PerfUtils.Delay(NPCConfig.waitAtPumpMs)
+    PerfUtils.Delay(Config.NPC.Animations.Refueling.duration)
     
     ClearPedTasksImmediately(ped)
     
@@ -307,7 +277,7 @@ local function runCustomerFlow(station)
     -- Trigger server event for payment
     TriggerServerEvent('mlfaGasStation:npcPurchase', station.id, fuelAmount, totalCost)
     
-    PerfUtils.Delay(NPCConfig.paymentTimeMs)
+    PerfUtils.Delay(Config.NPC.Animations.Payment.duration)
     
     -- STATE 4: Return to vehicle and leave
     TaskEnterVehicle(ped, vehicle, 10000, -1, 1.0, 1, 0)
@@ -339,7 +309,7 @@ end
 -- ============================================================================
 
 local function manageNPCSpawns()
-    if not NPCConfig.enabled then return end
+    if not Config.NPC.Enabled then return end
     
     local playerPos = GetEntityCoords(PlayerPedId())
     
@@ -347,11 +317,11 @@ local function manageNPCSpawns()
         local distance = PerfUtils.Distance3D(playerPos, station.coords)
         
         -- Only spawn if player nearby
-        if distance <= NPCConfig.streamRadius then
+        if distance <= 120.0 then -- Stream radius
             local currentActivity = stationActivity[station.id] or 0
             
             -- Spawn if below max
-            if currentActivity < NPCConfig.maxPerStation then
+            if currentActivity < 3 then -- Max per station
                 CreateThread(function()
                     runCustomerFlow(station)
                 end)
@@ -367,7 +337,7 @@ end
 CreateThread(function()
     Wait(5000) -- Wait for game to load
     
-    if not NPCConfig.enabled then
+    if not Config.NPC.Enabled then
         print('[NPC] NPC customer system is disabled')
         return
     end
@@ -395,7 +365,7 @@ end)
 -- ============================================================================
 
 exports('SetNPCEnabled', function(enabled)
-    NPCConfig.enabled = enabled
+    Config.NPC.Enabled = enabled
     print('[NPC] NPC system ' .. (enabled and 'enabled' or 'disabled'))
 end)
 
