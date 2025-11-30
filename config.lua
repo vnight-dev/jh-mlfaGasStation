@@ -141,35 +141,41 @@ Config.Apps = {
 Config.Notifications = {
     success = function(msg)
         if GetResourceState('mlfa_notifications') == 'started' then
-            exports['mlfa_notifications']:SendNotification({
-                type = 'success',
-                message = msg,
-                duration = 3000
-            })
+            pcall(function()
+                exports['mlfa_notifications']:SendNotification({
+                    type = 'success',
+                    message = msg,
+                    duration = 3000
+                })
+            end)
         else
-            print('[SUCCESS] ' .. msg)
+            ESX.ShowNotification('~g~' .. msg)
         end
     end,
     error = function(msg)
         if GetResourceState('mlfa_notifications') == 'started' then
-            exports['mlfa_notifications']:SendNotification({
-                type = 'error',
-                message = msg,
-                duration = 3000
-            })
+            pcall(function()
+                exports['mlfa_notifications']:SendNotification({
+                    type = 'error',
+                    message = msg,
+                    duration = 3000
+                })
+            end)
         else
-            print('[ERROR] ' .. msg)
+            ESX.ShowNotification('~r~' .. msg)
         end
     end,
     info = function(msg)
         if GetResourceState('mlfa_notifications') == 'started' then
-            exports['mlfa_notifications']:SendNotification({
-                type = 'info',
-                message = msg,
-                duration = 3000
-            })
+            pcall(function()
+                exports['mlfa_notifications']:SendNotification({
+                    type = 'info',
+                    message = msg,
+                    duration = 3000
+                })
+            end)
         else
-            print('[INFO] ' .. msg)
+            ESX.ShowNotification('~b~' .. msg)
         end
     end
 }

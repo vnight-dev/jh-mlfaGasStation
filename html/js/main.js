@@ -51,6 +51,22 @@ window.addEventListener('message', function (event) {
 });
 
 // ============================================================================
+// KEYBOARD LISTENERS
+// ============================================================================
+
+// Close on ESC
+document.addEventListener('keyup', (e) => {
+    if (e.key === 'Escape') {
+        console.log('[GASMANAGER UI] ESC key pressed');
+        if (AppState.currentScreen === 'home-screen') {
+            UIManager.closeTablet();
+        } else {
+            UIManager.goHome();
+        }
+    }
+});
+
+// ============================================================================
 // PURCHASE PROMPT FUNCTIONS
 // ============================================================================
 

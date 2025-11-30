@@ -203,23 +203,3 @@ Citizen.CreateThread(function()
 end)
 
 print('[MLFA GASSTATION] Purchase system loaded')
-
-RegisterCommand('debugpurchase', function(source, args)
-    local stationId = tonumber(args[1])
-    if stationId then
-        print('[DEBUG] Simulating purchase success for station ' .. stationId)
-        TriggerEvent('mlfaGasStation:purchaseSuccess', stationId)
-    else
-        print('[DEBUG] Usage: /debugpurchase [stationId]')
-    end
-end)
-
-RegisterCommand('forcebuy', function(source, args)
-    local stationId = tonumber(args[1])
-    if stationId then
-        print('[DEBUG] Forcing purchase for station ' .. stationId)
-        TriggerServerEvent('mlfaGasStation:purchaseStation', stationId)
-    else
-        print('[DEBUG] Usage: /forcebuy [stationId]')
-    end
-end)

@@ -4,7 +4,7 @@ local tabletProp = nil
 local currentStation = nil
 
 -- Toggle Tablet (matching jh-juge style)
-function ToggleTablet(state, stationId)
+function ToggleTablet(state, stationId, force)
     local playerPed = PlayerPedId()
     
     if state then
@@ -43,7 +43,7 @@ function ToggleTablet(state, stationId)
                 if isTabletOpen and not hasResponded then
                     print('[GASMANAGER] Server timed out fetching data')
                     Config.Notifications.error('Le serveur ne répond pas')
-                    ToggleTablet(false)
+                    ToggleTablet(false, nil, true)
                 end
             end)
             
@@ -69,13 +69,13 @@ function ToggleTablet(state, stationId)
                 else
                     print('[GASMANAGER] No data received from server')
                     Config.Notifications.error('Impossible de charger les données')
-                    ToggleTablet(false)
+                    ToggleTablet(false, nil, true)
                 end
             end, stationId)
         end
     else
-        if isTabletOpen then
-            print('[GASMANAGER] Closing tablet')
+        if isTabletOpen or force then
+            print('[GASMANAGER] Closing tablet (Force: ' .. tostring(force) .. ')')
             
             -- Clear NUI focus FIRST
             SetNuiFocus(false, false)
@@ -107,6 +107,11 @@ function ToggleTablet(state, stationId)
         end
     end
 end
+
+RegisterCommand('closegas', function()
+    ToggleTablet(false, nil, true)
+    Config.Notifications.info('Tablette fermée de force')
+end)
 
 -- Command to open tablet
 RegisterCommand('gasmanager', function()
