@@ -21,19 +21,6 @@ client_scripts {
     'client/push_notifications.lua',
     'client/weather_integration.lua',
     'client/phone_integration.lua',
-    'client/debug_commands.lua',
-    'client/debug_markers.lua'
-}
-
-server_scripts {
-    '@oxmysql/lib/MySQL.lua',
-    'server/discord_logs.lua',
-    'server/main.lua',
-    'server/database.lua',
-    'server/fuel_integration.lua',
-    'server/missions.lua',
-    'server/npc_handler.lua',
-    'server/salary_system.lua',
     'server/events_system.lua',
     'server/competition_system.lua',
     'server/franchise_system.lua',
