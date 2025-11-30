@@ -1,0 +1,348 @@
+/* ============================================================================
+   COMPONENTS.CSS - Composants réutilisables (Buttons, Cards, etc.)
+   ============================================================================ */
+
+/* BUTTONS */
+.btn {
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: #000;
+}
+
+.btn-primary:hover {
+    background: var(--success);
+    box-shadow: 0 0 20px var(--primary-glow);
+    transform: translateY(-2px);
+}
+
+.btn-success {
+    background: var(--success);
+    color: #000;
+}
+
+.btn-danger {
+    background: var(--danger);
+    color: white;
+}
+
+.btn-sm {
+    padding: 8px 16px;
+    font-size: 12px;
+}
+
+.home-btn {
+    background: var(--primary-dim);
+    border: 1px solid var(--primary);
+    color: var(--primary);
+    padding: 10px 20px;
+    border-radius: 12px;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.home-btn:hover {
+    background: var(--primary);
+    color: #000;
+    box-shadow: 0 0 20px var(--primary-glow);
+}
+
+.close-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: rgba(255, 0, 0, 0.1);
+    border: 1px solid var(--danger);
+    color: var(--danger);
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+}
+
+.close-btn:hover {
+    background: var(--danger);
+    color: white;
+}
+
+/* CARDS */
+.app-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 30px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.app-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--primary);
+    transform: scaleX(0);
+    transition: transform 0.3s;
+}
+
+.app-card:hover::before {
+    transform: scaleX(1);
+}
+
+.app-card:hover {
+    transform: translateY(-8px);
+    border-color: var(--primary);
+    background: var(--primary-dim);
+    box-shadow: 0 10px 30px var(--primary-glow);
+}
+
+.app-icon {
+    width: 70px;
+    height: 70px;
+    border-radius: 20px;
+    background: var(--primary-dim);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    color: var(--primary);
+    transition: all 0.3s;
+}
+
+.app-card:hover .app-icon {
+    transform: scale(1.1);
+    box-shadow: 0 0 30px var(--primary-glow);
+}
+
+.app-label {
+    font-size: 15px;
+    font-weight: 600;
+    text-align: center;
+}
+
+/* STAT CARDS */
+.stat-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 25px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    transition: all 0.3s;
+}
+
+.stat-card:hover {
+    border-color: var(--primary);
+    transform: translateY(-5px);
+}
+
+.stat-icon {
+    width: 70px;
+    height: 70px;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    flex-shrink: 0;
+}
+
+.stat-icon.fuel {
+    background: rgba(0, 242, 234, 0.15);
+    color: var(--primary);
+    box-shadow: 0 0 20px var(--primary-glow);
+}
+
+.stat-icon.money {
+    background: rgba(0, 201, 167, 0.15);
+    color: var(--success);
+}
+
+.stat-icon.sales {
+    background: rgba(255, 217, 61, 0.15);
+    color: var(--warning);
+}
+
+.stat-icon.employees {
+    background: rgba(100, 149, 237, 0.15);
+    color: #6495ED;
+}
+
+.stat-info {
+    flex: 1;
+}
+
+.stat-info h3 {
+    font-size: 13px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+}
+
+.stat-value {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+
+.stat-change {
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.stat-change.positive {
+    color: var(--success);
+}
+
+/* PURCHASE PROMPT */
+#purchase-prompt {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.purchase-prompt-container {
+    background: var(--bg-card);
+    border: 2px solid var(--primary);
+    border-radius: 20px;
+    padding: 40px;
+    max-width: 500px;
+    text-align: center;
+    animation: slideUp 0.3s;
+}
+
+.purchase-prompt-header {
+    margin-bottom: 30px;
+}
+
+.purchase-prompt-header h2 {
+    font-size: 28px;
+    color: var(--primary);
+    margin-top: 15px;
+}
+
+.purchase-prompt-header i {
+    font-size: 48px;
+    color: var(--primary);
+}
+
+.purchase-prompt-info {
+    margin-bottom: 30px;
+}
+
+.station-name {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+.station-price {
+    font-size: 18px;
+    color: var(--success);
+}
+
+.purchase-prompt-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+}
+
+.prompt-btn {
+    padding: 15px 30px;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: none;
+    cursor: pointer;
+}
+
+.prompt-btn-yes {
+    background: var(--success);
+    color: #000;
+}
+
+.prompt-btn-yes:hover {
+    background: var(--primary);
+    transform: scale(1.05);
+}
+
+.prompt-btn-no {
+    background: var(--danger);
+    color: #fff;
+}
+
+.prompt-btn-no:hover {
+    background: #ff6666;
+    transform: scale(1.05);
+}
+
+/* EMPTY MESSAGE */
+.empty-message {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 40px;
+    font-size: 16px;
+}
+
+/* REPORT CARDS */
+.report-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    text-align: center;
+}
+
+.report-card h4 {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+}
+
+.report-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.report-value.positive {
+    color: var(--success);
+}
+
+.report-value.negative {
+    color: var(--danger);
+}

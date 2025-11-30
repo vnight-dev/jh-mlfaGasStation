@@ -18,6 +18,9 @@ Citizen.CreateThread(function()
                 local currentFuel = exports['fscripts_fuel']:getVehFuel(vehicle)
                 
                 if currentFuel then
+                    -- Convert to number (fscripts_fuel might return string)
+                    currentFuel = tonumber(currentFuel) or 0
+                    
                     -- Check if fuel increased (player refueled)
                     if lastFuelLevel[plate] and currentFuel > lastFuelLevel[plate] + 1.0 then
                         local fuelAdded = currentFuel - lastFuelLevel[plate]

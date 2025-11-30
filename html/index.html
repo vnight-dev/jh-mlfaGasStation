@@ -5,12 +5,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GasManager</title>
-    <link rel="stylesheet" href="style.css">
+
+    <!-- CSS Modules (Order matters!) -->
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/apps.css">
+
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 
 <body>
-    <!-- Simple Purchase Prompt -->
+    <!-- Purchase Prompt -->
     <div id="purchase-prompt" style="display: none;">
         <div class="purchase-prompt-container">
             <div class="purchase-prompt-header">
@@ -62,7 +69,7 @@
 
             <!-- Main Content -->
             <main class="main-content">
-                <!-- Home Screen (App Grid) -->
+                <!-- Home Screen -->
                 <div id="home-screen" class="screen active">
                     <div class="welcome-section">
                         <h1>Bienvenue sur GasManager</h1>
@@ -77,7 +84,6 @@
                 <div id="dashboard-app" class="screen">
                     <div class="app-content">
                         <h2 class="app-title"><i class="fas fa-chart-line"></i> Tableau de Bord</h2>
-
                         <div class="stats-grid">
                             <div class="stat-card">
                                 <div class="stat-icon fuel">
@@ -100,16 +106,6 @@
                                 </div>
                             </div>
                             <div class="stat-card">
-                                <div class="stat-icon sales">
-                                    <i class="fas fa-chart-bar"></i>
-                                </div>
-                                <div class="stat-info">
-                                    <h3>Ventes Aujourd'hui</h3>
-                                    <p class="stat-value" id="today-sales">0L</p>
-                                    <span class="stat-change">125 transactions</span>
-                                </div>
-                            </div>
-                            <div class="stat-card">
                                 <div class="stat-icon employees">
                                     <i class="fas fa-users"></i>
                                 </div>
@@ -120,7 +116,6 @@
                                 </div>
                             </div>
                         </div>
-
                         <div class="dashboard-row">
                             <div class="chart-card">
                                 <h3><i class="fas fa-chart-area"></i> Ventes de la Semaine</h3>
@@ -139,11 +134,10 @@
                     </div>
                 </div>
 
-                <!-- Fuel Management App -->
+                <!-- Fuel App -->
                 <div id="fuel-app" class="screen">
                     <div class="app-content">
                         <h2 class="app-title"><i class="fas fa-gas-pump"></i> Gestion du Carburant</h2>
-
                         <div class="fuel-overview">
                             <div class="fuel-gauge">
                                 <div class="gauge-container">
@@ -161,7 +155,6 @@
                                 </button>
                             </div>
                         </div>
-
                         <div class="fuel-stats-row">
                             <div class="fuel-stat-card">
                                 <h4>Prix Actuel</h4>
@@ -179,13 +172,6 @@
                                 <span class="positive">+$1,200</span>
                             </div>
                         </div>
-
-                        <div class="fuel-history">
-                            <h3><i class="fas fa-history"></i> Historique des Livraisons</h3>
-                            <div class="history-list" id="fuel-history-list">
-                                <!-- Populated by JS -->
-                            </div>
-                        </div>
                     </div>
                 </div>
 
@@ -194,28 +180,12 @@
                     <div class="app-content">
                         <div class="app-header-row">
                             <h2 class="app-title"><i class="fas fa-users"></i> Gestion du Personnel</h2>
-                            <button class="btn btn-primary" onclick="showHireModal()">
+                            <button class="btn btn-primary">
                                 <i class="fas fa-plus"></i>
                                 Embaucher
                             </button>
                         </div>
-
                         <div id="employees-list">
-                            <!-- Populated by JS -->
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Permissions App -->
-                <div id="permissions-app" class="screen">
-                    <div class="app-content">
-                        <h2 class="app-title"><i class="fas fa-shield-alt"></i> Gestion des Permissions</h2>
-
-                        <div class="permissions-info">
-                            <p>Définissez les permissions pour chaque rang d'employé</p>
-                        </div>
-
-                        <div class="ranks-list" id="ranks-list">
                             <!-- Populated by JS -->
                         </div>
                     </div>
@@ -225,7 +195,6 @@
                 <div id="missions-app" class="screen">
                     <div class="app-content">
                         <h2 class="app-title"><i class="fas fa-tasks"></i> Missions Disponibles</h2>
-
                         <div class="missions-grid" id="missions-grid">
                             <!-- Populated by JS -->
                         </div>
@@ -236,13 +205,11 @@
                 <div id="reports-app" class="screen">
                     <div class="app-content">
                         <h2 class="app-title"><i class="fas fa-file-alt"></i> Rapports Financiers</h2>
-
                         <div class="report-filters">
                             <button class="filter-btn active" data-period="today">Aujourd'hui</button>
                             <button class="filter-btn" data-period="week">Cette Semaine</button>
                             <button class="filter-btn" data-period="month">Ce Mois</button>
                         </div>
-
                         <div class="reports-grid">
                             <div class="report-card">
                                 <h4>Revenus Totaux</h4>
@@ -261,23 +228,6 @@
                                 <p class="report-value" id="report-fuel-sold">0L</p>
                             </div>
                         </div>
-
-                        <div class="transactions-section">
-                            <h3><i class="fas fa-list"></i> Transactions Détaillées</h3>
-                            <table class="transactions-table">
-                                <thead>
-                                    <tr>
-                                        <th>Date</th>
-                                        <th>Type</th>
-                                        <th>Description</th>
-                                        <th>Montant</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="transactions-tbody">
-                                    <!-- Populated by JS -->
-                                </tbody>
-                            </table>
-                        </div>
                     </div>
                 </div>
 
@@ -285,7 +235,6 @@
                 <div id="settings-app" class="screen">
                     <div class="app-content">
                         <h2 class="app-title"><i class="fas fa-cog"></i> Paramètres</h2>
-
                         <div class="settings-grid">
                             <div class="setting-card">
                                 <h3><i class="fas fa-dollar-sign"></i> Prix du Carburant</h3>
@@ -294,7 +243,6 @@
                                     <button class="btn btn-primary" onclick="updateFuelPrice()">Mettre à jour</button>
                                 </div>
                             </div>
-
                             <div class="setting-card">
                                 <h3><i class="fas fa-money-bill-wave"></i> Retirer de l'Argent</h3>
                                 <div class="setting-control">
@@ -302,7 +250,6 @@
                                     <button class="btn btn-success" onclick="withdrawMoney()">Retirer</button>
                                 </div>
                             </div>
-
                             <div class="setting-card">
                                 <h3><i class="fas fa-hand-holding-usd"></i> Déposer de l'Argent</h3>
                                 <div class="setting-control">
@@ -310,7 +257,6 @@
                                     <button class="btn btn-success" onclick="depositMoney()">Déposer</button>
                                 </div>
                             </div>
-
                             <div class="setting-card">
                                 <h3><i class="fas fa-store-alt"></i> Vendre la Station</h3>
                                 <div class="setting-control">
@@ -325,7 +271,16 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <!-- JS Modules (Order matters!) -->
+    <script src="js/utils.js"></script>
+    <script src="js/apps/dashboard.js"></script>
+    <script src="js/apps/fuel.js"></script>
+    <script src="js/apps/employees.js"></script>
+    <script src="js/apps/missions.js"></script>
+    <script src="js/apps/reports.js"></script>
+    <script src="js/apps/settings.js"></script>
+    <script src="js/ui-manager.js"></script>
+    <script src="js/main.js"></script>
 </body>
 
 </html>

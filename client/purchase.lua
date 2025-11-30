@@ -29,6 +29,7 @@ end
 function HidePurchaseUI()
     if not purchaseUIOpen then return end
     
+    print('[PURCHASE] Hiding purchase UI and disabling focus')
     purchaseUIOpen = false
     currentPurchaseStation = nil
     
@@ -36,6 +37,7 @@ function HidePurchaseUI()
         type = 'hidePurchasePrompt'
     })
     SetNuiFocus(false, false)
+    SetNuiFocusKeepInput(false)
 end
 
 -- NUI Callback for purchase
@@ -47,9 +49,19 @@ RegisterNUICallback('confirmPurchase', function(data, cb)
         print('[PURCHASE] Purchasing station ID: ' .. currentPurchaseStation.id)
         TriggerServerEvent('mlfaGasStation:purchaseStation', currentPurchaseStation.id)
         HidePurchaseUI()
+        
+        -- Open tablet immediately after purchase (optimistic UI)
+        -- REMOVED: Caused race condition. Now waiting for server event.
     else
         print('[PURCHASE] ERROR: No current purchase station')
     end
+end)
+
+RegisterNetEvent('mlfaGasStation:purchaseSuccess')
+AddEventHandler('mlfaGasStation:purchaseSuccess', function(stationId)
+    print('[PURCHASE] Purchase success confirmed by server for station ' .. stationId)
+    Wait(500) -- Small delay to ensure DB sync
+    ToggleTablet(true, stationId)
 end)
 
 RegisterNUICallback('cancelPurchase', function(data, cb)
@@ -60,15 +72,22 @@ end)
 
 -- Check if station is owned
 local stationOwners = {}
+local myIdentifier = nil
 
 RegisterNetEvent('mlfaGasStation:updateStationOwner')
 AddEventHandler('mlfaGasStation:updateStationOwner', function(stationId, owner)
+    print('[PURCHASE] Received owner update for station ' .. stationId .. ': ' .. tostring(owner))
     stationOwners[stationId] = owner
 end)
 
 -- Request station owners on resource start
 Citizen.CreateThread(function()
     Wait(1000)
+    -- Get my identifier
+    ESX.TriggerServerCallback('mlfaGasStation:getMyIdentifier', function(identifier)
+        myIdentifier = identifier
+    end)
+    
     for _, station in ipairs(Config.Stations) do
         ESX.TriggerServerCallback('mlfaGasStation:getStationOwner', function(owner)
             stationOwners[station.id] = owner
@@ -87,25 +106,28 @@ Citizen.CreateThread(function()
             local purchasePoint = station.purchasePoint or station.coords
             local dist = #(coords - purchasePoint)
             
-            -- Only show marker if station is not owned
+            -- Logic:
+            -- If NOT owned: Show BUY marker
+            -- If OWNED: Handled by main.lua (Manage marker)
+            
             if not stationOwners[station.id] or stationOwners[station.id] == '' then
                 if dist < 50.0 then
                     wait = 0
                     
-                    -- Draw marker
+                    -- Draw marker (Green for Buy)
                     DrawMarker(
                         Config.PurchaseMarker.type,
                         purchasePoint.x, purchasePoint.y, purchasePoint.z - 1.0,
                         0.0, 0.0, 0.0,
                         0.0, 0.0, 0.0,
                         Config.PurchaseMarker.size.x, Config.PurchaseMarker.size.y, Config.PurchaseMarker.size.z,
-                        Config.PurchaseMarker.color.r, Config.PurchaseMarker.color.g, Config.PurchaseMarker.color.b, Config.PurchaseMarker.color.a,
+                        0, 255, 0, 150, -- Green
                         false, true, 2, false
                     )
                     
                     if dist < Config.PurchaseMarker.distance then
                         -- Show help text
-                        ESX.ShowHelpNotification("Appuyez sur ~INPUT_CONTEXT~ pour acheter ~b~" .. station.label)
+                        ESX.ShowHelpNotification("Appuyez sur ~INPUT_CONTEXT~ pour ~g~ACHETER~s~ cette station")
                         
                         if IsControlJustReleased(0, 38) then -- E key
                             ShowPurchaseUI(station)

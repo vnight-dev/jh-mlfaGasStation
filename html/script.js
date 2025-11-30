@@ -4,6 +4,112 @@ let appsData = null;
 let currentScreen = 'home-screen';
 let canClose = false;
 
+// ============================================================================
+// NUI MESSAGE LISTENER (CRITICAL - HANDLES LUA MESSAGES)
+// ============================================================================
+
+window.addEventListener('message', function (event) {
+    const data = event.data;
+    console.log('[GASMANAGER UI] Received message:', data);
+
+    switch (data.type) {
+        case 'open':
+            console.log('[GASMANAGER UI] Opening tablet');
+            openTablet(data.data);
+            break;
+
+        case 'close':
+            console.log('[GASMANAGER UI] Closing tablet');
+            closeTablet();
+            break;
+
+        case 'showPurchasePrompt':
+            console.log('[GASMANAGER UI] Showing purchase prompt');
+            showPurchasePrompt(data.data);
+            break;
+
+        case 'hidePurchasePrompt':
+            console.log('[GASMANAGER UI] Hiding purchase prompt');
+            hidePurchasePrompt();
+            break;
+
+        case 'updateData':
+            console.log('[GASMANAGER UI] Updating data');
+            if (data.data.station) stationData = data.data.station;
+            if (data.data.player) playerData = data.data.player;
+            refreshCurrentScreen();
+            break;
+
+        default:
+            console.warn('[GASMANAGER UI] Unknown message type:', data.type);
+    }
+});
+
+// ============================================================================
+// PURCHASE PROMPT FUNCTIONS
+// ============================================================================
+
+function showPurchasePrompt(data) {
+    console.log('[PURCHASE UI] Showing purchase prompt for:', data.stationName);
+    document.getElementById('prompt-station-name').textContent = data.stationName;
+    document.getElementById('prompt-station-price').textContent = '$' + formatNumber(data.price);
+    document.getElementById('purchase-prompt').style.display = 'flex';
+}
+
+function hidePurchasePrompt() {
+    console.log('[PURCHASE UI] Hiding purchase prompt');
+    document.getElementById('purchase-prompt').style.display = 'none';
+}
+
+function confirmPurchase() {
+    console.log('[PURCHASE UI] Confirming purchase');
+    fetch(`https://${GetParentResourceName()}/confirmPurchase`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({})
+    }).then(() => {
+        console.log('[PURCHASE UI] Purchase confirmed');
+        hidePurchasePrompt();
+    }).catch(err => {
+        console.error('[PURCHASE UI] Error confirming purchase:', err);
+    });
+}
+
+function cancelPurchase() {
+    console.log('[PURCHASE UI] Cancelling purchase');
+    fetch(`https://${GetParentResourceName()}/cancelPurchase`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({})
+    }).then(() => {
+        console.log('[PURCHASE UI] Purchase cancelled');
+        hidePurchasePrompt();
+    }).catch(err => {
+        console.error('[PURCHASE UI] Error cancelling purchase:', err);
+    });
+}
+
+// ============================================================================
+// UTILITY FUNCTION
+// ============================================================================
+
+function GetParentResourceName() {
+    const resourceName = window.location.hostname;
+    return resourceName !== '' ? resourceName : 'jh-mlfaGasStation';
+}
+
+function refreshCurrentScreen() {
+    if (currentScreen === 'dashboard-app') {
+        loadDashboard();
+    } else if (currentScreen === 'fuel-app') {
+        loadFuelApp();
+    }
+}
+
+// ============================================================================
+// APPS CONFIGURATION
+// ============================================================================
+
 // Apps Configuration
 const APPS = {
     'dashboard': { icon: 'fas fa-chart-line', label: 'Dashboard', screen: 'dashboard-app' },

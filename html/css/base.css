@@ -1,0 +1,47 @@
+/* ============================================================================
+   BASE.CSS - Variables CSS et Reset
+   ============================================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
+:root {
+    --primary: #00F2EA;
+    --primary-dim: rgba(0, 242, 234, 0.1);
+    --primary-glow: rgba(0, 242, 234, 0.4);
+    --secondary: #1a2a3a;
+    --bg-dark: #0f1215;
+    --bg-card: #15191e;
+    --text: #ffffff;
+    --text-muted: #8a8a95;
+    --border: rgba(0, 242, 234, 0.15);
+    --glass: rgba(255, 255, 255, 0.03);
+    --success: #00C9A7;
+    --danger: #ff4444;
+    --warning: #FFD93D;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    user-select: none;
+}
+
+body {
+    font-family: 'Outfit', sans-serif;
+    color: var(--text);
+    overflow: hidden;
+    background: transparent;
+}
+
+button {
+    font-family: inherit;
+    cursor: pointer;
+    border: none;
+    outline: none;
+}
+
+input {
+    font-family: inherit;
+    outline: none;
+}

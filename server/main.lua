@@ -1,5 +1,25 @@
 local ESX = exports['es_extended']:getSharedObject()
 
+-- Get My Identifier Callback
+ESX.RegisterServerCallback('mlfaGasStation:getMyIdentifier', function(source, cb)
+    local xPlayer = ESX.GetPlayerFromId(source)
+    if xPlayer then
+        cb(xPlayer.identifier)
+    else
+        cb(nil)
+    end
+end)
+
+-- Get My Rank Callback
+ESX.RegisterServerCallback('mlfaGasStation:getMyRank', function(source, cb, stationId)
+    local xPlayer = ESX.GetPlayerFromId(source)
+    if not xPlayer then return cb(nil) end
+    
+    GetEmployeeRank(xPlayer.identifier, stationId, function(rank)
+        cb(rank)
+    end)
+end)
+
 -- Get Station Data Callback
 ESX.RegisterServerCallback('mlfaGasStation:getStationData', function(source, cb, stationId)
     local xPlayer = ESX.GetPlayerFromId(source)
@@ -258,6 +278,7 @@ AddEventHandler('mlfaGasStation:purchaseStation', function(stationId)
                     AddTransaction(stationId, 'expense', -purchasePrice, 'Achat de la station', xPlayer.identifier)
                     print('[GASSTATION] Purchase completed successfully')
                     TriggerClientEvent('mlfaGasStation:notify', source, 'success', 'Station achetée !')
+                    TriggerClientEvent('mlfaGasStation:purchaseSuccess', source, stationId)
                     
                     -- Broadcast to all clients that this station is now owned
                     TriggerClientEvent('mlfaGasStation:updateStationOwner', -1, stationId, xPlayer.identifier)

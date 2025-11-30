@@ -34,12 +34,33 @@ function ToggleTablet(state, stationId)
             isTabletOpen = true
             
             -- Fetch station data
+            print('[GASMANAGER] Fetching data for station ' .. stationId)
+            
+            local hasResponded = false
+            
+            -- Timeout failsafe
+            SetTimeout(5000, function()
+                if isTabletOpen and not hasResponded then
+                    print('[GASMANAGER] Server timed out fetching data')
+                    Config.Notifications.error('Le serveur ne répond pas')
+                    ToggleTablet(false)
+                end
+            end)
+            
             ESX.TriggerServerCallback('mlfaGasStation:getStationData', function(data)
-                print('[GASMANAGER] Received data from server:', json.encode(data))
+                hasResponded = true
+                print('[GASMANAGER] Data received. Valid: ' .. tostring(data ~= nil))
+                
                 if data then
                     -- Set NUI focus AFTER receiving data
+                    print('[GASMANAGER] Setting NUI focus...')
                     SetNuiFocus(true, true)
+                    SetNuiFocusKeepInput(false)
                     
+                    -- Wait a bit for NUI to be ready
+                    Citizen.Wait(100)
+                    
+                    print('[GASMANAGER] Sending open message to NUI...')
                     SendNUIMessage({
                         type = 'open',
                         data = data
@@ -106,6 +127,15 @@ RegisterCommand('gasmanager', function()
     else
         ToggleTablet(false)
     end
+end)
+
+-- Emergency NUI fix command
+RegisterCommand('gasfix', function()
+    SetNuiFocus(false, false)
+    SetNuiFocusKeepInput(false)
+    isTabletOpen = false
+    SendNUIMessage({ type = 'close' })
+    Config.Notifications.info('Focus NUI réinitialisé')
 end)
 
 -- NUI Callbacks
@@ -188,7 +218,29 @@ Citizen.CreateThread(function()
     end
 end)
 
--- Interaction markers
+-- Permission cache
+local myPermissions = {} -- [stationId] = rank (or nil)
+
+-- Update permissions event
+RegisterNetEvent('mlfaGasStation:updatePermissions')
+AddEventHandler('mlfaGasStation:updatePermissions', function(stationId, rank)
+    myPermissions[stationId] = rank
+    print('[GASMANAGER] Updated permissions for station ' .. stationId .. ': ' .. tostring(rank))
+end)
+
+-- Request permissions on load
+Citizen.CreateThread(function()
+    Wait(2000) -- Wait for ESX
+    for _, station in ipairs(Config.Stations) do
+        ESX.TriggerServerCallback('mlfaGasStation:getMyRank', function(rank)
+            if rank then
+                myPermissions[station.id] = rank
+            end
+        end, station.id)
+    end
+end)
+
+-- Interaction markers (Manage)
 Citizen.CreateThread(function()
     while true do
         local wait = 1000
@@ -197,15 +249,22 @@ Citizen.CreateThread(function()
         
         for _, station in ipairs(Config.Stations) do
             local dist = #(coords - station.coords)
-            if dist < 10.0 then
-                wait = 0
-                DrawMarker(20, station.coords.x, station.coords.y, station.coords.z,
-                    0, 0, 0, 0, 0, 0, 0.5, 0.5, 0.5, 0, 242, 234, 100, false, true, 2, false)
-                
-                if dist < 2.0 then
-                    ESX.ShowHelpNotification("Appuyez sur ~INPUT_CONTEXT~ pour ouvrir le GasManager")
-                    if IsControlJustReleased(0, Config.OpenKey) then
-                        ToggleTablet(true, station.id)
+            
+            -- Only show MANAGE marker if we have permissions (owner or employee)
+            -- AND if we are close enough
+            if myPermissions[station.id] then
+                if dist < 10.0 then
+                    wait = 0
+                    
+                    -- Draw marker (Cyan for Manage)
+                    DrawMarker(20, station.coords.x, station.coords.y, station.coords.z,
+                        0, 0, 0, 0, 0, 0, 0.5, 0.5, 0.5, 0, 242, 234, 150, false, true, 2, false)
+                    
+                    if dist < 2.0 then
+                        ESX.ShowHelpNotification("Appuyez sur ~INPUT_CONTEXT~ pour ~c~GÉRER~s~ la station")
+                        if IsControlJustReleased(0, Config.OpenKey) then
+                            ToggleTablet(true, station.id)
+                        end
                     end
                 end
             end
