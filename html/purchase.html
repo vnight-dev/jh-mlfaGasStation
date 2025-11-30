@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Purchase Prompt</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+            background: transparent;
+        }
+
+        #purchase-prompt {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 9999;
+            pointer-events: auto;
+        }
+
+        .purchase-prompt-container {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border: 2px solid #00F2EA;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 0 50px rgba(0, 242, 234, 0.3);
+            animation: slideIn 0.3s ease-out;
+            min-width: 400px;
+            z-index: 10000;
+            pointer-events: auto;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .purchase-prompt-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .purchase-prompt-header i {
+            font-size: 60px;
+            color: #00F2EA;
+            margin-bottom: 15px;
+            filter: drop-shadow(0 0 20px rgba(0, 242, 234, 0.5));
+        }
+
+        .purchase-prompt-header h2 {
+            color: #ffffff;
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .purchase-prompt-info {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .station-name {
+            color: #00F2EA;
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .station-price {
+            color: #ffffff;
+            font-size: 18px;
+        }
+
+        .station-price span {
+            color: #FFD93D;
+            font-weight: 700;
+            font-size: 24px;
+        }
+
+        .purchase-prompt-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .prompt-btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            pointer-events: auto;
+        }
+
+        .prompt-btn-yes {
+            background: #00F2EA;
+            color: #000;
+        }
+
+        .prompt-btn-yes:hover {
+            background: #00d4cc;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 20px rgba(0, 242, 234, 0.4);
+        }
+
+        .prompt-btn-no {
+            background: #ff4444;
+            color: #fff;
+        }
+
+        .prompt-btn-no:hover {
+            background: #ff3333;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 20px rgba(255, 68, 68, 0.4);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="purchase-prompt">
+        <div class="purchase-prompt-container">
+            <div class="purchase-prompt-header">
+                <i class="fas fa-store"></i>
+                <h2>Acheter cette Station</h2>
+            </div>
+            <div class="purchase-prompt-info">
+                <p class="station-name" id="prompt-station-name">Station Downtown</p>
+                <p class="station-price">Prix: <span id="prompt-station-price">$500,000</span></p>
+            </div>
+            <div class="purchase-prompt-buttons">
+                <button class="prompt-btn prompt-btn-yes" onclick="confirmPurchase()">
+                    <i class="fas fa-check"></i> Oui, Acheter
+                </button>
+                <button class="prompt-btn prompt-btn-no" onclick="cancelPurchase()">
+                    <i class="fas fa-times"></i> Non, Annuler
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        console.log('[PURCHASE UI] Script loaded');
+
+        function confirmPurchase() {
+            console.log('[PURCHASE UI] Confirm button clicked');
+            fetch(`https://${GetParentResourceName()}/confirmPurchase`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({})
+            }).then(() => {
+                console.log('[PURCHASE UI] Confirm callback sent');
+            }).catch(err => {
+                console.error('[PURCHASE UI] Error:', err);
+            });
+        }
+
+        function cancelPurchase() {
+            console.log('[PURCHASE UI] Cancel button clicked');
+            fetch(`https://${GetParentResourceName()}/cancelPurchase`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({})
+            }).then(() => {
+                console.log('[PURCHASE UI] Cancel callback sent');
+            }).catch(err => {
+                console.error('[PURCHASE UI] Error:', err);
+            });
+        }
+
+        function GetParentResourceName() {
+            return window.location.hostname === '' ? 'mlfaGasStation' : window.location.hostname;
+        }
+
+        window.addEventListener('message', (event) => {
+            const data = event.data;
+            console.log('[PURCHASE UI] Received message:', data);
+
+            if (data.type === 'showPurchasePrompt') {
+                console.log('[PURCHASE UI] Showing prompt');
+                document.getElementById('prompt-station-name').textContent = data.data.stationName;
+                document.getElementById('prompt-station-price').textContent = '$' + data.data.price.toLocaleString();
+                document.getElementById('purchase-prompt').style.display = 'flex';
+            } else if (data.type === 'hidePurchasePrompt') {
+                console.log('[PURCHASE UI] Hiding prompt');
+                document.getElementById('purchase-prompt').style.display = 'none';
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && document.getElementById('purchase-prompt').style.display === 'flex') {
+                console.log('[PURCHASE UI] ESC pressed');
+                cancelPurchase();
+            }
+        });
+
+        // Test click handler
+        document.addEventListener('click', (e) => {
+            console.log('[PURCHASE UI] Click detected:', e.target);
+        });
+    </script>
+</body>
+
+</html>
