@@ -81,9 +81,10 @@ function ToggleTablet(state, stationId)
             SetNuiFocus(false, false)
             SetNuiFocusKeepInput(false)
             
-            -- Stop animation
+            -- Stop animation and unfreeze
             ClearPedTasks(playerPed)
             StopAnimTask(playerPed, Config.TabletAnim.dict, Config.TabletAnim.anim, 1.0)
+            FreezeEntityPosition(playerPed, false) -- Ensure player is not frozen
             
             -- Remove prop
             if tabletProp then
@@ -98,8 +99,11 @@ function ToggleTablet(state, stationId)
             SendNUIMessage({ type = 'close' })
             
             -- Force enable controls
-            Citizen.Wait(100)
-            EnableAllControlActions(0)
+            Citizen.CreateThread(function()
+                Citizen.Wait(100)
+                EnableAllControlActions(0)
+                print('[GASMANAGER] Controls enabled')
+            end)
         end
     end
 end

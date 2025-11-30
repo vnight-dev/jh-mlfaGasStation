@@ -59,8 +59,18 @@ end)
 
 RegisterNetEvent('mlfaGasStation:purchaseSuccess')
 AddEventHandler('mlfaGasStation:purchaseSuccess', function(stationId)
-    print('[PURCHASE] Purchase success confirmed by server for station ' .. stationId)
+    print('[PURCHASE] DEBUG: purchaseSuccess event received for station ' .. tostring(stationId))
+    
+    -- Force update local owner cache immediately
+    if myIdentifier then
+        stationOwners[stationId] = myIdentifier
+        print('[PURCHASE] DEBUG: Local owner cache updated. New owner: ' .. tostring(stationOwners[stationId]))
+    else
+        print('[PURCHASE] ERROR: myIdentifier is nil!')
+    end
+    
     Wait(500) -- Small delay to ensure DB sync
+    print('[PURCHASE] DEBUG: Attempting to open tablet...')
     ToggleTablet(true, stationId)
 end)
 
@@ -156,3 +166,13 @@ Citizen.CreateThread(function()
 end)
 
 print('[MLFA GASSTATION] Purchase system loaded')
+
+RegisterCommand('debugpurchase', function(source, args)
+    local stationId = tonumber(args[1])
+    if stationId then
+        print('[DEBUG] Simulating purchase success for station ' .. stationId)
+        TriggerEvent('mlfaGasStation:purchaseSuccess', stationId)
+    else
+        print('[DEBUG] Usage: /debugpurchase [stationId]')
+    end
+end)

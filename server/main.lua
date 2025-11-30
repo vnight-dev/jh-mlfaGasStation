@@ -271,18 +271,36 @@ AddEventHandler('mlfaGasStation:purchaseStation', function(stationId)
         print('[GASSTATION] Processing purchase...')
         xPlayer.removeMoney(purchasePrice)
         
-        MySQL.update('UPDATE gas_stations SET owner = ? WHERE id = ?', {xPlayer.identifier, stationId}, function()
-            -- Add player as owner employee
-            MySQL.insert('INSERT INTO gas_employees (station_id, identifier, rank, salary) VALUES (?, ?, ?, ?)', 
-                {stationId, xPlayer.identifier, 'owner', 0}, function()
-                    AddTransaction(stationId, 'expense', -purchasePrice, 'Achat de la station', xPlayer.identifier)
-                    print('[GASSTATION] Purchase completed successfully')
-                    TriggerClientEvent('mlfaGasStation:notify', source, 'success', 'Station achetée !')
-                    TriggerClientEvent('mlfaGasStation:purchaseSuccess', source, stationId)
-                    
-                    -- Broadcast to all clients that this station is now owned
-                    TriggerClientEvent('mlfaGasStation:updateStationOwner', -1, stationId, xPlayer.identifier)
+        MySQL.update('UPDATE gas_stations SET owner = ?, money = money - ? WHERE id = ?', {xPlayer.identifier, purchasePrice, stationId}, function(affectedRows)
+            print('[GASSTATION] DEBUG: Update affected rows: ' .. tostring(affectedRows))
+            
+            if affectedRows > 0 then
+                -- Create employee record for owner
+                MySQL.insert('INSERT INTO gas_employees (station_id, identifier, `rank`, salary) VALUES (?, ?, ?, ?)', {
+                    stationId, xPlayer.identifier, 'boss', 0
+                }, function(empId)
+                    if empId then
+                        -- Add transaction
+                        AddTransaction(stationId, 'expense', -purchasePrice, 'Achat de la station', xPlayer.identifier)
+                        print('[GASSTATION] Purchase completed successfully. Triggering events...')
+                        
+                        TriggerClientEvent('mlfaGasStation:notify', source, 'success', 'Station achetée !')
+                        print('[GASSTATION] DEBUG: Sending purchaseSuccess to source ' .. source)
+                        TriggerClientEvent('mlfaGasStation:purchaseSuccess', source, stationId)
+                        
+                        -- Update permissions for the buyer immediately
+                        TriggerClientEvent('mlfaGasStation:updatePermissions', source, stationId, 'boss')
+                        
+                        -- Broadcast to all clients that this station is now owned
+                        TriggerClientEvent('mlfaGasStation:updateStationOwner', -1, stationId, xPlayer.identifier)
+                    else
+                        print('[GASSTATION] ERROR: Failed to create employee record')
+                    end
                 end)
+            else
+                print('[GASSTATION] ERROR: Station update failed (affectedRows=0)')
+                TriggerClientEvent('mlfaGasStation:notify', source, 'error', 'Erreur lors de l\'achat')
+            end
         end)
     end)
 end)
@@ -315,6 +333,9 @@ AddEventHandler('mlfaGasStation:sellStation', function(stationId)
             MySQL.update('UPDATE gas_stations SET owner = NULL, money = 0 WHERE id = ?', {stationId}, function()
                 TriggerClientEvent('mlfaGasStation:notify', source, 'success', 'Station vendue pour $' .. sellPrice)
                 TriggerClientEvent('mlfaGasStation:close', source)
+                
+                -- Broadcast update
+                TriggerClientEvent('mlfaGasStation:updateStationOwner', -1, stationId, nil)
             end)
         end)
     end)
