@@ -1,0 +1,302 @@
+/* ============================================================================
+   MISSION OBJECTIVES UI - STYLES
+   Modern glassmorphism design for mission tracking
+   ============================================================================ */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    overflow: hidden;
+}
+
+#objectives-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    max-width: 400px;
+    z-index: 9999;
+    pointer-events: none;
+}
+
+#objectives-container.hidden {
+    display: none;
+}
+
+/* Mission Card */
+.mission-card {
+    background: rgba(26, 26, 46, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 16px;
+    padding: 20px;
+    border: 1px solid rgba(0, 242, 234, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    animation: slideIn 0.3s ease-out;
+    pointer-events: auto;
+}
+
+.mission-card.completed {
+    animation: slideOut 0.3s ease-out forwards;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(450px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOut {
+    from {
+        transform: translateX(0) scale(1);
+        opacity: 1;
+    }
+
+    to {
+        transform: translateX(450px) scale(0.8);
+        opacity: 0;
+    }
+}
+
+/* Mission Header */
+.mission-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 15px;
+}
+
+.mission-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #00F2EA;
+    text-shadow: 0 0 10px rgba(0, 242, 234, 0.3);
+}
+
+.mission-reward {
+    font-size: 14px;
+    font-weight: 600;
+    color: #FFD93D;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.mission-reward::before {
+    content: '💰';
+}
+
+/* Objectives List */
+.objectives-list {
+    list-style: none;
+    margin-bottom: 15px;
+}
+
+.objective-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    color: #fff;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.objective-checkbox {
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.objective-item.completed .objective-checkbox {
+    background: #00C9A7;
+    border-color: #00C9A7;
+    animation: checkPulse 0.3s ease;
+}
+
+.objective-item.completed .objective-checkbox::after {
+    content: '✓';
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.objective-item.completed .objective-text {
+    text-decoration: line-through;
+    opacity: 0.6;
+}
+
+@keyframes checkPulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.2);
+    }
+}
+
+/* Progress Bar */
+.mission-progress {
+    margin-bottom: 12px;
+}
+
+.progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 6px;
+}
+
+.progress-bar-container {
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #00F2EA, #00C9A7);
+    border-radius: 3px;
+    transition: width 0.3s ease;
+    box-shadow: 0 0 10px rgba(0, 242, 234, 0.5);
+}
+
+/* Timer */
+.mission-timer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.timer-icon {
+    font-size: 16px;
+}
+
+.timer-text {
+    color: #00F2EA;
+}
+
+.timer-text.warning {
+    color: #FFD93D;
+    animation: timerPulse 1s ease infinite;
+}
+
+.timer-text.danger {
+    color: #FF6B6B;
+    animation: timerPulse 0.5s ease infinite;
+}
+
+@keyframes timerPulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.6;
+    }
+}
+
+/* Completion Animation */
+.mission-complete-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(0, 201, 167, 0.9), rgba(0, 242, 234, 0.9));
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.3s ease;
+}
+
+.complete-icon {
+    font-size: 48px;
+    margin-bottom: 10px;
+    animation: bounceIn 0.5s ease;
+}
+
+.complete-text {
+    font-size: 18px;
+    font-weight: 600;
+    color: white;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes bounceIn {
+    0% {
+        transform: scale(0);
+    }
+
+    50% {
+        transform: scale(1.2);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    #objectives-container {
+        max-width: 300px;
+        right: 10px;
+        top: 10px;
+    }
+
+    .mission-card {
+        padding: 15px;
+    }
+
+    .mission-title {
+        font-size: 14px;
+    }
+
+    .objective-item {
+        font-size: 12px;
+    }
+}

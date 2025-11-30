@@ -263,16 +263,43 @@ local function runCustomerFlow(station)
     TaskLeaveVehicle(ped, vehicle, 0)
     PerfUtils.Delay(2000)
     
-    -- Fueling animation
-    TaskStartScenarioInPlace(ped, "WORLD_HUMAN_STAND_IMPATIENT", 0, true)
+    -- Fueling animation (using Config.NPC.Animations.Refueling)
+    local refuelAnim = Config.NPC.Animations.Refueling
+    RequestAnimDict(refuelAnim.dict)
+    local timeout = GetGameTimer() + 3000
+    while not HasAnimDictLoaded(refuelAnim.dict) and GetGameTimer() < timeout do
+        Wait(50)
+    end
+    
+    if HasAnimDictLoaded(refuelAnim.dict) then
+        TaskPlayAnim(ped, refuelAnim.dict, refuelAnim.anim, 8.0, -8.0, -1, 1, 0, false, false, false)
+        debugLog('ANIMATION', 'Playing refueling animation')
+    else
+        -- Fallback to scenario
+        TaskStartScenarioInPlace(ped, "WORLD_HUMAN_STAND_IMPATIENT", 0, true)
+    end
+    
     PerfUtils.Delay(Config.NPC.Animations.Refueling.duration)
     
     ClearPedTasksImmediately(ped)
     
     -- STATE 3: Payment (simulate)
-    local fuelAmount = math.random(20, 60) -- Liters
+    local fuelAmount = math.random(Config.NPC.FuelAmount.Min, Config.NPC.FuelAmount.Max)
     local fuelPrice = 2.5 -- Should get from station data
     local totalCost = fuelAmount * fuelPrice
+    
+    -- Payment animation (using Config.NPC.Animations.Payment)
+    local paymentAnim = Config.NPC.Animations.Payment
+    RequestAnimDict(paymentAnim.dict)
+    timeout = GetGameTimer() + 3000
+    while not HasAnimDictLoaded(paymentAnim.dict) and GetGameTimer() < timeout do
+        Wait(50)
+    end
+    
+    if HasAnimDictLoaded(paymentAnim.dict) then
+        TaskPlayAnim(ped, paymentAnim.dict, paymentAnim.anim, 8.0, -8.0, -1, 0, 0, false, false, false)
+        debugLog('ANIMATION', 'Playing payment animation')
+    end
     
     -- Trigger server event for payment
     TriggerServerEvent('mlfaGasStation:npcPurchase', station.id, fuelAmount, totalCost)

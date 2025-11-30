@@ -286,6 +286,20 @@ AddEventHandler('mlfaGasStation:purchaseStation', function(stationId)
                         AddTransaction(stationId, 'expense', -purchasePrice, 'Achat de la station', xPlayer.identifier)
                         print('[GASSTATION] Purchase completed successfully. Triggering events...')
                         
+                        -- Get station name for logging
+                        local stationName = 'Station ' .. stationId
+                        for _, station in ipairs(Config.Stations) do
+                            if station.id == stationId then
+                                stationName = station.label
+                                break
+                            end
+                        end
+                        
+                        -- Discord logging
+                        if DiscordLog then
+                            DiscordLog.StationPurchase(xPlayer.getName(), xPlayer.identifier, stationId, stationName, purchasePrice)
+                        end
+                        
                         TriggerClientEvent('mlfaGasStation:notify', source, 'success', 'Station achetée !')
                         print('[GASSTATION] DEBUG: Sending purchaseSuccess to source ' .. source)
                         TriggerClientEvent('mlfaGasStation:purchaseSuccess', source, stationId)

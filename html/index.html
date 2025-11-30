@@ -1,286 +1,162 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GasManager</title>
+    <title>Gas Station OS v6.0</title>
 
-    <!-- CSS Modules (Order matters!) -->
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&family=Poppins:wght@400;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Styles -->
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/layout.css">
     <link rel="stylesheet" href="css/components.css">
     <link rel="stylesheet" href="css/apps.css">
 
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
-    <!-- Purchase Prompt -->
-    <div id="purchase-prompt" style="display: none;">
-        <div class="purchase-prompt-container">
-            <div class="purchase-prompt-header">
-                <i class="fas fa-store"></i>
-                <h2>Acheter cette Station</h2>
-            </div>
-            <div class="purchase-prompt-info">
-                <p class="station-name" id="prompt-station-name">Station Downtown</p>
-                <p class="station-price">Prix: <span id="prompt-station-price">$500,000</span></p>
-            </div>
-            <div class="purchase-prompt-buttons">
-                <button class="prompt-btn prompt-btn-yes" onclick="confirmPurchase()">
-                    <i class="fas fa-check"></i> Oui, Acheter
-                </button>
-                <button class="prompt-btn prompt-btn-no" onclick="cancelPurchase()">
-                    <i class="fas fa-times"></i> Non, Annuler
-                </button>
-            </div>
+
+    <!-- BOOT SCREEN -->
+    <div id="boot-screen">
+        <div class="boot-logo">
+            <i class="fas fa-gas-pump fa-5x" style="color: var(--primary);"></i>
         </div>
+        <div class="boot-text">GAS STATION OS <span style="font-size: 12px; vertical-align: super;">v6.0</span></div>
+        <div class="boot-loader">
+            <div class="boot-progress"></div>
+        </div>
+        <div class="boot-status">INITIALIZING SYSTEM...</div>
     </div>
 
-    <!-- Main Tablet App -->
-    <div id="app" style="display: none;">
-        <div class="tablet">
-            <!-- Header -->
+    <!-- MAIN APP -->
+    <div id="app">
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+            <div class="logo-area">
+                <i class="fas fa-atom logo-icon"></i>
+                <div class="logo-text">
+                    <h1>GasOS</h1>
+                    <span>SINGULARITY</span>
+                </div>
+            </div>
+
+            <nav class="nav-links">
+                <div class="nav-item active" data-app="dashboard">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </div>
+                <div class="nav-item" data-app="fuel">
+                    <i class="fas fa-gas-pump"></i>
+                    <span>Fuel Management</span>
+                </div>
+                <div class="nav-item" data-app="employees">
+                    <i class="fas fa-users"></i>
+                    <span>Employees</span>
+                </div>
+                <div class="nav-item" data-app="missions">
+                    <i class="fas fa-tasks"></i>
+                    <span>Missions</span>
+                </div>
+                <div class="nav-item" data-app="stockmarket">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Stock Market</span>
+                </div>
+                <div class="nav-item" data-app="franchise">
+                    <i class="fas fa-building"></i>
+                    <span>Franchise</span>
+                </div>
+                <div class="nav-item" data-app="ev">
+                    <i class="fas fa-bolt"></i>
+                    <span>EV Charging</span>
+                </div>
+                <div class="nav-item" data-app="security">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Security</span>
+                </div>
+                <div class="nav-item" data-app="settings">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="nav-item" id="logout-btn">
+                    <i class="fas fa-power-off" style="color: var(--danger);"></i>
+                    <span>Disconnect</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- CONTENT -->
+        <div class="content">
             <header class="header">
-                <div class="header-left">
-                    <button class="home-btn" onclick="goHome()" style="display: none;">
-                        <i class="fas fa-arrow-left"></i>
-                        <span>Retour</span>
-                    </button>
-                    <div class="logo">
-                        <i class="fas fa-gas-pump"></i>
-                        <span>GasManager</span>
-                    </div>
+                <div class="page-title">
+                    <h2 id="current-page-title">Dashboard</h2>
+                    <span id="current-date" style="color: var(--text-muted); font-size: 14px;">Monday, 12:00 PM</span>
                 </div>
-                <div class="header-center">
-                    <div class="station-info">
-                        <h2 id="station-name">Station</h2>
-                        <span id="user-role">Propriétaire</span>
+
+                <div class="header-actions">
+                    <div class="user-profile">
+                        <div class="avatar">JS</div>
+                        <div class="user-info">
+                            <div class="user-name">John Smith</div>
+                            <div class="user-role" style="font-size: 12px; color: var(--primary);">Owner</div>
+                        </div>
                     </div>
-                </div>
-                <div class="header-right">
-                    <button class="close-btn" onclick="closeTablet()">
-                        <i class="fas fa-times"></i>
-                    </button>
                 </div>
             </header>
 
-            <!-- Main Content -->
-            <main class="main-content">
-                <!-- Home Screen -->
-                <div id="home-screen" class="screen active">
-                    <div class="welcome-section">
-                        <h1>Bienvenue sur GasManager</h1>
-                        <p>Sélectionnez une application pour commencer</p>
-                    </div>
-                    <div class="app-grid" id="app-grid">
-                        <!-- Apps populated by JS -->
-                    </div>
-                </div>
-
-                <!-- Dashboard App -->
-                <div id="dashboard-app" class="screen">
-                    <div class="app-content">
-                        <h2 class="app-title"><i class="fas fa-chart-line"></i> Tableau de Bord</h2>
-                        <div class="stats-grid">
-                            <div class="stat-card">
-                                <div class="stat-icon fuel">
-                                    <i class="fas fa-gas-pump"></i>
-                                </div>
-                                <div class="stat-info">
-                                    <h3>Stock Carburant</h3>
-                                    <p class="stat-value" id="fuel-stock">0L</p>
-                                    <span class="stat-change positive">+500L aujourd'hui</span>
-                                </div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-icon money">
-                                    <i class="fas fa-dollar-sign"></i>
-                                </div>
-                                <div class="stat-info">
-                                    <h3>Caisse</h3>
-                                    <p class="stat-value" id="station-money">$0</p>
-                                    <span class="stat-change positive">+$2,500 aujourd'hui</span>
-                                </div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-icon employees">
-                                    <i class="fas fa-users"></i>
-                                </div>
-                                <div class="stat-info">
-                                    <h3>Employés</h3>
-                                    <p class="stat-value" id="employee-count">0</p>
-                                    <span class="stat-change">3 actifs</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="dashboard-row">
-                            <div class="chart-card">
-                                <h3><i class="fas fa-chart-area"></i> Ventes de la Semaine</h3>
-                                <div class="chart-placeholder">
-                                    <i class="fas fa-chart-line"></i>
-                                    <p>Graphique des ventes</p>
-                                </div>
-                            </div>
-                            <div class="recent-activity">
-                                <h3><i class="fas fa-clock"></i> Activité Récente</h3>
-                                <div id="recent-activity-list">
-                                    <!-- Populated by JS -->
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Fuel App -->
-                <div id="fuel-app" class="screen">
-                    <div class="app-content">
-                        <h2 class="app-title"><i class="fas fa-gas-pump"></i> Gestion du Carburant</h2>
-                        <div class="fuel-overview">
-                            <div class="fuel-gauge">
-                                <div class="gauge-container">
-                                    <div class="gauge-fill" id="fuel-gauge" style="width: 50%"></div>
-                                </div>
-                                <div class="gauge-info">
-                                    <span id="fuel-current">5000L</span>
-                                    <span class="gauge-max">/ 10000L</span>
-                                </div>
-                            </div>
-                            <div class="fuel-actions">
-                                <button class="btn btn-primary" onclick="openApp('missions-app')">
-                                    <i class="fas fa-truck"></i>
-                                    Commander du Carburant
-                                </button>
-                            </div>
-                        </div>
-                        <div class="fuel-stats-row">
-                            <div class="fuel-stat-card">
-                                <h4>Prix Actuel</h4>
-                                <p class="big-value" id="current-fuel-price">$2.50</p>
-                                <span>/litre</span>
-                            </div>
-                            <div class="fuel-stat-card">
-                                <h4>Ventes Semaine</h4>
-                                <p class="big-value" id="week-fuel-sales">3,250L</p>
-                                <span class="positive">+15%</span>
-                            </div>
-                            <div class="fuel-stat-card">
-                                <h4>Revenus Semaine</h4>
-                                <p class="big-value" id="week-fuel-revenue">$8,125</p>
-                                <span class="positive">+$1,200</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Employees App -->
-                <div id="employees-app" class="screen">
-                    <div class="app-content">
-                        <div class="app-header-row">
-                            <h2 class="app-title"><i class="fas fa-users"></i> Gestion du Personnel</h2>
-                            <button class="btn btn-primary">
-                                <i class="fas fa-plus"></i>
-                                Embaucher
-                            </button>
-                        </div>
-                        <div id="employees-list">
-                            <!-- Populated by JS -->
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Missions App -->
-                <div id="missions-app" class="screen">
-                    <div class="app-content">
-                        <h2 class="app-title"><i class="fas fa-tasks"></i> Missions Disponibles</h2>
-                        <div class="missions-grid" id="missions-grid">
-                            <!-- Populated by JS -->
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Reports App -->
-                <div id="reports-app" class="screen">
-                    <div class="app-content">
-                        <h2 class="app-title"><i class="fas fa-file-alt"></i> Rapports Financiers</h2>
-                        <div class="report-filters">
-                            <button class="filter-btn active" data-period="today">Aujourd'hui</button>
-                            <button class="filter-btn" data-period="week">Cette Semaine</button>
-                            <button class="filter-btn" data-period="month">Ce Mois</button>
-                        </div>
-                        <div class="reports-grid">
-                            <div class="report-card">
-                                <h4>Revenus Totaux</h4>
-                                <p class="report-value positive" id="report-revenue">$0</p>
-                            </div>
-                            <div class="report-card">
-                                <h4>Dépenses</h4>
-                                <p class="report-value negative" id="report-expenses">$0</p>
-                            </div>
-                            <div class="report-card">
-                                <h4>Bénéfice Net</h4>
-                                <p class="report-value" id="report-profit">$0</p>
-                            </div>
-                            <div class="report-card">
-                                <h4>Carburant Vendu</h4>
-                                <p class="report-value" id="report-fuel-sold">0L</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Settings App -->
-                <div id="settings-app" class="screen">
-                    <div class="app-content">
-                        <h2 class="app-title"><i class="fas fa-cog"></i> Paramètres</h2>
-                        <div class="settings-grid">
-                            <div class="setting-card">
-                                <h3><i class="fas fa-dollar-sign"></i> Prix du Carburant</h3>
-                                <div class="setting-control">
-                                    <input type="number" id="fuel-price-input" step="0.1" min="0" placeholder="2.50">
-                                    <button class="btn btn-primary" onclick="updateFuelPrice()">Mettre à jour</button>
-                                </div>
-                            </div>
-                            <div class="setting-card">
-                                <h3><i class="fas fa-money-bill-wave"></i> Retirer de l'Argent</h3>
-                                <div class="setting-control">
-                                    <input type="number" id="withdraw-amount" step="100" min="0" placeholder="1000">
-                                    <button class="btn btn-success" onclick="withdrawMoney()">Retirer</button>
-                                </div>
-                            </div>
-                            <div class="setting-card">
-                                <h3><i class="fas fa-hand-holding-usd"></i> Déposer de l'Argent</h3>
-                                <div class="setting-control">
-                                    <input type="number" id="deposit-amount" step="100" min="0" placeholder="1000">
-                                    <button class="btn btn-success" onclick="depositMoney()">Déposer</button>
-                                </div>
-                            </div>
-                            <div class="setting-card">
-                                <h3><i class="fas fa-store-alt"></i> Vendre la Station</h3>
-                                <div class="setting-control">
-                                    <p class="warning-text">Cette action est irréversible</p>
-                                    <button class="btn btn-danger" onclick="sellStation()">Vendre</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <!-- APP CONTAINERS -->
+            <main id="main-container">
+                <!-- Apps will be injected here by JS -->
             </main>
         </div>
     </div>
 
-    <!-- JS Modules (Order matters!) -->
+    <!-- PURCHASE PROMPT -->
+    <div id="purchase-prompt" class="purchase-prompt" style="display: none;">
+        <div class="prompt-card">
+            <div class="prompt-icon">
+                <i class="fas fa-gas-pump"></i>
+            </div>
+            <h3>Station à Vendre</h3>
+            <div class="station-info">
+                <span id="prompt-station-name">Station Name</span>
+                <span id="prompt-station-price" class="price">$500,000</span>
+            </div>
+            <p>Voulez-vous acheter cette station ?</p>
+            <div class="prompt-actions">
+                <button class="btn btn-danger" onclick="UIManager.cancelPurchase()">Annuler</button>
+                <button class="btn btn-primary" onclick="UIManager.confirmPurchase()">Acheter</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
     <script src="js/utils.js"></script>
+    <script src="js/theme_engine.js"></script> <!-- v6.0 Theme Engine -->
+    <script src="js/ui-manager.js"></script>
+    <script src="js/main.js"></script>
+
+    <!-- App Scripts -->
     <script src="js/apps/dashboard.js"></script>
     <script src="js/apps/fuel.js"></script>
     <script src="js/apps/employees.js"></script>
     <script src="js/apps/missions.js"></script>
-    <script src="js/apps/reports.js"></script>
     <script src="js/apps/settings.js"></script>
-    <script src="js/ui-manager.js"></script>
-    <script src="js/main.js"></script>
+    <script src="js/charts.js"></script>
 </body>
 
 </html>

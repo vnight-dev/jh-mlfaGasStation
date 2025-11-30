@@ -49,6 +49,18 @@ AddEventHandler('mlfaGasStation:npcPurchase', function(stationId, liters, totalC
             'system'
         )
         
+        -- Discord logging
+        if DiscordLog and Config.Discord.Logs.Fuel then
+            local stationName = 'Station ' .. stationId
+            for _, station in ipairs(Config.Stations) do
+                if station.id == stationId then
+                    stationName = station.label
+                    break
+                end
+            end
+            DiscordLog.FuelSale(stationId, stationName, liters, totalCost, 'NPC')
+        end
+        
         print(string.format('[NPC] Station %d: NPC purchased %.2fL for $%.2f', stationId, liters, totalCost))
     end)
 end)

@@ -1,8 +1,8 @@
 # 🏪 jh-mlfaGasStation
 
-> Système complet de gestion de stations-service pour FiveM avec clients NPC intelligents, interface moderne et configuration centralisée.
+> Système complet de gestion de stations-service pour FiveM avec clients NPC intelligents, interface moderne, missions avec objectifs UI, et configuration centralisée.
 
-![Version](https://img.shields.io/badge/version-2.2.0-blue.svg)
+![Version](https://img.shields.io/badge/version-2.4.0-blue.svg)
 ![FiveM](https://img.shields.io/badge/FiveM-ESX-green.svg)
 ![Lua](https://img.shields.io/badge/Lua-5.4-purple.svg)
 

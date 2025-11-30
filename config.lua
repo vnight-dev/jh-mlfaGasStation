@@ -462,6 +462,231 @@ Config.Notifications = {
 }
 
 -- ============================================================================
+-- PHONE APP CONFIGURATION (v3.0)
+-- ============================================================================
+Config.PhoneApp = {
+    Enabled = true,
+    
+    -- Supported phone resources
+    SupportedPhones = {
+        'lb-phone',
+        'qb-phone',
+        'qs-smartphone'
+    },
+    
+    -- App settings
+    AppName = 'Gas Manager',
+    AppIcon = 'fas fa-gas-pump',
+    AppColor = '#00F2EA',
+    
+    -- Notifications
+    SendNotifications = true,
+    NotificationThreshold = {
+        LargeSale = 5000,      -- Notify if sale > $5000
+        LowStock = 1000        -- Notify if stock < 1000L
+    }
+}
+
+-- ============================================================================
+-- FRANCHISE SYSTEM CONFIGURATION (v3.0)
+-- ============================================================================
+Config.Franchise = {
+    Enabled = true,
+    MaxStationsPerPlayer = 5,
+    
+    -- Network bonuses (based on number of stations)
+    NetworkBonus = {
+        [2] = 0.05,  -- 2 stations: +5%
+        [3] = 0.10,  -- 3 stations: +10%
+        [4] = 0.15,  -- 4 stations: +15%
+        [5] = 0.20   -- 5 stations: +20%
+    },
+    
+    -- Franchise perks
+    Perks = {
+        SharedEmployees = true,
+        CentralizedMoney = true,
+        BulkFuelDiscount = 0.10,
+        BrandingBonus = 0.05
+    },
+    
+    -- Expansion costs
+    ExpansionCost = {
+        [2] = 400000,
+        [3] = 600000,
+        [4] = 800000,
+        [5] = 1000000
+    }
+}
+
+-- ============================================================================
+-- STOCK MARKET CONFIGURATION (v3.0)
+-- ============================================================================
+Config.StockMarket = {
+    Enabled = true,
+    
+    -- Stock settings
+    TotalShares = 1000,
+    MinSharePrice = 100,
+    MaxSharePrice = 10000,
+    
+    -- Trading fees
+    BuyFee = 0.02,   -- 2%
+    SellFee = 0.02,  -- 2%
+    
+    -- Dividends
+    DividendRate = 0.10,           -- 10% of profits
+    DividendInterval = 86400,      -- Daily (seconds)
+    
+    -- Price calculation weights
+    PriceWeights = {
+        revenue = 0.40,
+        sales = 0.30,
+        stock = 0.20,
+        employees = 0.10
+    }
+}
+
+-- ============================================================================
+-- REPUTATION & ACHIEVEMENTS CONFIGURATION (v3.0)
+-- ============================================================================
+Config.Reputation = {
+    Enabled = true,
+    MaxLevel = 100,
+    
+    -- XP rewards
+    XPRewards = {
+        Sale = 10,
+        Mission = 50,
+        Employee = 25,
+        StationPurchase = 500
+    },
+    
+    -- Level up rewards (money per level)
+    LevelUpReward = 1000,
+    
+    -- Achievement notifications
+    ShowAchievements = true,
+    AchievementSound = true
+}
+
+-- ============================================================================
+-- SERVER EVENTS CONFIGURATION (v3.0)
+-- ============================================================================
+Config.ServerEvents = {
+    Enabled = true,
+    
+    -- Event types
+    Events = {
+        FuelShortage = {
+            enabled = true,
+            chance = 0.05,        -- 5% chance
+            duration = 3600,      -- 1 hour
+            priceMultiplier = 2.0 -- Fuel price x2
+        },
+        
+        GasBoom = {
+            enabled = true,
+            chance = 0.03,        -- 3% chance
+            duration = 7200,      -- 2 hours
+            salesMultiplier = 3.0 -- Sales x3
+        },
+        
+        TaxAudit = {
+            enabled = true,
+            chance = 0.02,        -- 2% chance
+            duration = 1800,      -- 30 minutes
+            taxRate = 0.25        -- 25% tax
+        }
+    },
+    
+    -- Event check interval
+    CheckInterval = 1800  -- 30 minutes
+}
+
+-- ============================================================================
+-- PVP STATION WARS CONFIGURATION (v3.0)
+-- ============================================================================
+Config.PvP = {
+    Enabled = false,  -- Disabled by default
+    
+    -- War settings
+    MinPlayersToStart = 4,
+    WarDuration = 3600,        -- 1 hour
+    WarCooldown = 86400,       -- 24 hours
+    
+    -- Capture settings
+    CaptureRadius = 50.0,
+    CaptureTime = 300,         -- 5 minutes
+    MinAttackers = 2,
+    
+    -- Rewards
+    WinnerReward = 100000,
+    LoserPenalty = 50000,
+    
+    -- Protection
+    NewStationProtection = 604800  -- 7 days
+}
+
+-- ============================================================================
+-- THEME ENGINE CONFIGURATION (v6.0)
+-- ============================================================================
+Config.ThemeEngine = {
+    Enabled = true,
+    DefaultTheme = 'default',
+    AllowCustomThemes = true, -- Allow players to create custom themes
+    
+    -- Available presets
+    Presets = {
+        'default',
+        'cyberpunk',
+        'minimal',
+        'midnight'
+    }
+}
+
+-- ============================================================================
+-- EV CHARGING CONFIGURATION (v6.0)
+-- ============================================================================
+Config.EV = {
+    Enabled = true,
+    ElectricityCost = 0.15, -- Cost per kWh for station owner
+    
+    ChargerTypes = {
+        standard = { speed = 22, price = 0.30 },
+        fast = { speed = 50, price = 0.45 },
+        super = { speed = 150, price = 0.60 }
+    }
+}
+
+-- ============================================================================
+-- SECURITY SYSTEM CONFIGURATION (v6.0)
+-- ============================================================================
+Config.Security = {
+    Enabled = true,
+    CCTV = true,           -- Enable CCTV cameras
+    AlarmSystem = true,    -- Enable burglar alarms
+    SecurityGuards = true, -- Hireable NPC guards
+    
+    GuardCost = 5000,      -- Hiring cost
+    GuardSalary = 500      -- Daily salary
+}
+
+-- ============================================================================
+-- GAS STATION OS AI (v6.0)
+-- ============================================================================
+Config.AI = {
+    Enabled = true,
+    Name = 'GasOS',
+    Personality = 'helpful', -- helpful, sarcastic, professional
+    
+    -- Features
+    AutoOrdering = true,   -- AI can order fuel automatically
+    PriceOptimization = true, -- AI suggests optimal prices
+    PredictiveAnalysis = true -- AI predicts rush hours
+}
+
+-- ============================================================================
 -- COMPATIBILITY ALIASES (pour ne pas casser le code existant)
 -- ============================================================================
 Config.OpenKey = Config.UI.OpenKey
