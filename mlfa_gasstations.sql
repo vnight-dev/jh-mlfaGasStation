@@ -1,11 +1,15 @@
 -- ============================================================================
 -- jh-mlfaGasStation - Database Schema
--- Version: 2.2.0
--- Date: 30/11/2024
+-- Version: 6.0.0 (Singularity Update)
+-- Date: 01/12/2024
 -- ============================================================================
 
--- Supprimer les tables existantes si elles existent
+-- Supprimer les tables existantes si elles existent (pour reset complet)
+DROP TABLE IF EXISTS `gas_stocks`;
+DROP TABLE IF EXISTS `gas_achievements`;
+DROP TABLE IF EXISTS `gas_player_progress`;
 DROP TABLE IF EXISTS `gas_missions`;
+DROP TABLE IF EXISTS `gas_fuel_sales`;
 DROP TABLE IF EXISTS `gas_transactions`;
 DROP TABLE IF EXISTS `gas_employees`;
 DROP TABLE IF EXISTS `gas_stations`;
@@ -17,7 +21,7 @@ DROP TABLE IF EXISTS `gas_stations`;
 CREATE TABLE `gas_stations` (
     `id` INT(11) NOT NULL AUTO_INCREMENT,
     `name` VARCHAR(50) NOT NULL,
-    `label` VARCHAR(100) NOT NULL,
+    `label` VARCHAR(100) NOT NULL DEFAULT 'Station Service',
     `owner` VARCHAR(60) DEFAULT NULL COMMENT 'Identifier du propriétaire',
     `money` INT(11) DEFAULT 0 COMMENT 'Argent dans la caisse',
     `fuel_stock` INT(11) DEFAULT 5000 COMMENT 'Stock de carburant en litres',
@@ -66,6 +70,22 @@ CREATE TABLE `gas_transactions` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================================================
+-- TABLE: gas_fuel_sales
+-- Historique détaillé des ventes de carburant
+-- ============================================================================
+CREATE TABLE `gas_fuel_sales` (
+    `id` INT(11) NOT NULL AUTO_INCREMENT,
+    `station_id` INT(11) NOT NULL,
+    `liters` DECIMAL(10,2) NOT NULL,
+    `amount` DECIMAL(10,2) NOT NULL,
+    `buyer_identifier` VARCHAR(60) DEFAULT NULL,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    INDEX `idx_station` (`station_id`),
+    FOREIGN KEY (`station_id`) REFERENCES `gas_stations`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================================
 -- TABLE: gas_missions
 -- Missions actives et leur statut
 -- ============================================================================
@@ -86,6 +106,47 @@ CREATE TABLE `gas_missions` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================================================
+-- TABLE: gas_player_progress
+-- Progression du joueur (Réputation & XP)
+-- ============================================================================
+CREATE TABLE `gas_player_progress` (
+    `identifier` VARCHAR(60) NOT NULL,
+    `level` INT(11) DEFAULT 1,
+    `xp` INT(11) DEFAULT 0,
+    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`identifier`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================================
+-- TABLE: gas_achievements
+-- Succès débloqués par les joueurs
+-- ============================================================================
+CREATE TABLE `gas_achievements` (
+    `id` INT(11) NOT NULL AUTO_INCREMENT,
+    `identifier` VARCHAR(60) NOT NULL,
+    `achievement_id` VARCHAR(50) NOT NULL,
+    `unlocked_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `unique_achievement` (`identifier`, `achievement_id`),
+    INDEX `idx_identifier` (`identifier`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================================
+-- TABLE: gas_stocks
+-- Actions boursières des stations
+-- ============================================================================
+CREATE TABLE `gas_stocks` (
+    `id` INT(11) NOT NULL AUTO_INCREMENT,
+    `station_id` INT(11) NOT NULL,
+    `identifier` VARCHAR(60) NOT NULL,
+    `shares` INT(11) DEFAULT 0,
+    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `unique_stock` (`station_id`, `identifier`),
+    FOREIGN KEY (`station_id`) REFERENCES `gas_stations`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================================
 -- DONNÉES DE DÉMONSTRATION
 -- 5 stations-service (non possédées par défaut)
 -- ============================================================================
@@ -95,24 +156,3 @@ INSERT INTO `gas_stations` (`id`, `name`, `label`, `owner`, `money`, `fuel_stock
 (3, 'Station 3', 'Station Sandy Shores', NULL, 0, 5000, 2.50),
 (4, 'Station 4', 'Station Paleto Bay', NULL, 0, 5000, 2.50),
 (5, 'Station 5', 'Station Great Ocean Highway', NULL, 0, 5000, 2.50);
-
--- ============================================================================
--- NOTES D'INSTALLATION
--- ============================================================================
--- 1. Assurez-vous que votre base de données utilise utf8mb4_unicode_ci
--- 2. Les coordonnées des stations sont définies dans config.lua
--- 3. Les stations sont créées sans propriétaire (disponibles à l'achat)
--- 4. Le stock initial est de 5000L par station
--- 5. Le prix par défaut est de $2.50/L
--- 
--- Pour réinitialiser une station :
--- UPDATE gas_stations SET owner = NULL, money = 0, fuel_stock = 5000 WHERE id = 1;
--- DELETE FROM gas_employees WHERE station_id = 1;
--- DELETE FROM gas_transactions WHERE station_id = 1;
--- 
--- Pour voir les statistiques :
--- SELECT s.label, s.owner, s.money, s.fuel_stock, COUNT(e.id) as employees
--- FROM gas_stations s
--- LEFT JOIN gas_employees e ON s.id = e.station_id
--- GROUP BY s.id;
--- ============================================================================

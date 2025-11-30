@@ -1,5 +1,5 @@
 -- ============================================================================
--- AUTO-REPAIR DATABASE SYSTEM
+-- AUTO-REPAIR DATABASE SYSTEM v6.0
 -- Automatically creates and repairs tables if there are issues
 -- ============================================================================
 
@@ -45,15 +45,43 @@ local function createTableSafe(tableName, createQuery, onSuccess)
     end)
 end
 
+-- Check and insert default stations
+local function checkDefaultStations()
+    MySQL.scalar('SELECT COUNT(*) FROM gas_stations', {}, function(count)
+        if count == 0 then
+            print('[MLFA GASSTATION] 📥 Inserting default stations...')
+            
+            local stations = {
+                {1, 'Station 1', 'Station Downtown', 5000, 2.50},
+                {2, 'Station 2', 'Station Grove Street', 5000, 2.50},
+                {3, 'Station 3', 'Station Sandy Shores', 5000, 2.50},
+                {4, 'Station 4', 'Station Paleto Bay', 5000, 2.50},
+                {5, 'Station 5', 'Station Great Ocean Highway', 5000, 2.50}
+            }
+            
+            for _, s in ipairs(stations) do
+                MySQL.insert('INSERT INTO gas_stations (id, name, label, fuel_stock, fuel_price) VALUES (?, ?, ?, ?, ?)',
+                    {s[1], s[2], s[3], s[4], s[5]})
+            end
+            
+            print('[MLFA GASSTATION] ✅ Default stations inserted successfully')
+        else
+            print('[MLFA GASSTATION] ✅ Stations table already populated (' .. count .. ' stations)')
+        end
+    end)
+end
+
 MySQL.ready(function()
-    print('[MLFA GASSTATION] Initializing database with auto-repair system...')
+    print('[MLFA GASSTATION] Initializing database with auto-repair system v6.0...')
     
     -- SEQUENTIAL TABLE CREATION (to avoid foreign key issues)
+    
     -- Step 1: Gas Stations Table (must be first - referenced by others)
     createTableSafe('gas_stations', [[
         CREATE TABLE IF NOT EXISTS gas_stations (
             id INT AUTO_INCREMENT PRIMARY KEY,
-            name VARCHAR(50) UNIQUE NOT NULL,
+            name VARCHAR(50) NOT NULL,
+            label VARCHAR(100) NOT NULL DEFAULT 'Station Service',
             owner VARCHAR(60),
             fuel_stock INT DEFAULT 5000,
             money INT DEFAULT 0,
@@ -61,9 +89,10 @@ MySQL.ready(function()
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             INDEX idx_owner (owner)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     ]], function()
-        -- Step 2: Employees Table (after gas_stations)
+        
+        -- Step 2: Employees Table
         createTableSafe('gas_employees', [[
             CREATE TABLE IF NOT EXISTS gas_employees (
                 id INT AUTO_INCREMENT PRIMARY KEY,
@@ -74,211 +103,97 @@ MySQL.ready(function()
                 hired_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 UNIQUE KEY unique_employee (station_id, identifier),
                 INDEX idx_identifier (identifier),
-                INDEX idx_station (station_id)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+                INDEX idx_station (station_id),
+                FOREIGN KEY (station_id) REFERENCES gas_stations(id) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
         ]])
         
-        -- Step 3: Transactions Table (after gas_stations)
+        -- Step 3: Transactions Table
         createTableSafe('gas_transactions', [[
             CREATE TABLE IF NOT EXISTS gas_transactions (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 station_id INT NOT NULL,
-                `type` ENUM('fuel_sale', 'expense', 'salary', 'mission_reward', 'fuel_purchase') NOT NULL,
+                `type` VARCHAR(50) NOT NULL,
                 amount DECIMAL(10,2) NOT NULL,
                 description TEXT,
                 created_by VARCHAR(60),
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 INDEX idx_station (station_id),
                 INDEX idx_type (`type`),
-                INDEX idx_date (created_at)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+                INDEX idx_date (created_at),
+                FOREIGN KEY (station_id) REFERENCES gas_stations(id) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
         ]])
         
-        -- Step 4: Fuel Sales Table (after gas_stations)
+        -- Step 4: Fuel Sales Table
         createTableSafe('gas_fuel_sales', [[
             CREATE TABLE IF NOT EXISTS gas_fuel_sales (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 station_id INT NOT NULL,
-                player_id VARCHAR(60) NOT NULL,
-                vehicle_plate VARCHAR(20),
                 liters DECIMAL(10,2) NOT NULL,
-                price_per_liter DECIMAL(10,2) NOT NULL,
-                total_cost DECIMAL(10,2) NOT NULL,
+                amount DECIMAL(10,2) NOT NULL,
+                buyer_identifier VARCHAR(60),
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 INDEX idx_station (station_id),
-                INDEX idx_player (player_id),
-                INDEX idx_date (created_at)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+                FOREIGN KEY (station_id) REFERENCES gas_stations(id) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
         ]])
         
-        -- Step 5: Missions Table (after gas_stations)
+        -- Step 5: Missions Table
         createTableSafe('gas_missions', [[
             CREATE TABLE IF NOT EXISTS gas_missions (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 station_id INT NOT NULL,
-                player_id VARCHAR(60) NOT NULL,
                 mission_type VARCHAR(50) NOT NULL,
-                `status` ENUM('active', 'completed', 'failed') DEFAULT 'active',
+                player_identifier VARCHAR(60) NOT NULL,
+                status VARCHAR(20) DEFAULT 'active',
                 reward INT DEFAULT 0,
                 started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 completed_at TIMESTAMP NULL,
-                INDEX idx_player (player_id),
-                INDEX idx_status (`status`),
-                INDEX idx_station (station_id)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+                INDEX idx_station (station_id),
+                INDEX idx_player (player_identifier),
+                FOREIGN KEY (station_id) REFERENCES gas_stations(id) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
         ]])
-    end)
-    
-    -- Wait a bit for tables to be created, then initialize stations
-    SetTimeout(2000, function()
-        -- Initialize default stations
-        for _, station in ipairs(Config.Stations) do
-            MySQL.query('SELECT id FROM gas_stations WHERE name = ?', {station.name}, function(result)
-                if not result or #result == 0 then
-                    MySQL.insert('INSERT INTO gas_stations (name, fuel_stock, fuel_price) VALUES (?, ?, ?)', {
-                        station.name,
-                        Config.MaxFuelStock / 2,
-                        Config.DefaultFuelPrice
-                    }, function(insertId)
-                        if insertId then
-                            print('[MLFA GASSTATION] ✅ Created station: ' .. station.label)
-                        end
-                    end)
-                end
-            end)
-        end
         
-        tablesCreated = true
-        print('[MLFA GASSTATION] ✅ Database initialized successfully')
-    end)
-end)
-
--- Health check: verify tables every 5 minutes
-CreateThread(function()
-    while true do
-        Wait(300000) -- 5 minutes
+        -- Step 6: Player Progress (Reputation)
+        createTableSafe('gas_player_progress', [[
+            CREATE TABLE IF NOT EXISTS gas_player_progress (
+                identifier VARCHAR(60) NOT NULL PRIMARY KEY,
+                level INT DEFAULT 1,
+                xp INT DEFAULT 0,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        ]])
         
-        if tablesCreated then
-            -- Verify critical tables exist
-            MySQL.query('SHOW TABLES LIKE "gas_stations"', {}, function(result)
-                if not result or #result == 0 then
-                    print('[MLFA GASSTATION] ⚠️ Critical table missing! Attempting repair...')
-                    tablesCreated = false
-                    creationAttempts = 0
-                    -- Trigger re-initialization
-                    TriggerEvent('mlfaGasStation:reinitDatabase')
-                end
-            end)
-        end
-    end
+        -- Step 7: Achievements
+        createTableSafe('gas_achievements', [[
+            CREATE TABLE IF NOT EXISTS gas_achievements (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                identifier VARCHAR(60) NOT NULL,
+                achievement_id VARCHAR(50) NOT NULL,
+                unlocked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE KEY unique_achievement (identifier, achievement_id),
+                INDEX idx_identifier (identifier)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        ]])
+        
+        -- Step 8: Stock Market
+        createTableSafe('gas_stocks', [[
+            CREATE TABLE IF NOT EXISTS gas_stocks (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                station_id INT NOT NULL,
+                identifier VARCHAR(60) NOT NULL,
+                shares INT DEFAULT 0,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                UNIQUE KEY unique_stock (station_id, identifier),
+                FOREIGN KEY (station_id) REFERENCES gas_stations(id) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        ]], function()
+            -- All tables created, check for default data
+            print('[MLFA GASSTATION] ✅ Database initialized successfully')
+            checkDefaultStations()
+        end)
+        
+    end)
 end)
-
--- Event to manually trigger database repair
-RegisterNetEvent('mlfaGasStation:reinitDatabase')
-AddEventHandler('mlfaGasStation:reinitDatabase', function()
-    print('[MLFA GASSTATION] 🔧 Manual database re-initialization triggered')
-    tablesCreated = false
-    creationAttempts = 0
-end)
-
--- Helper Functions
-function GetStationData(stationId, cb)
-    MySQL.query('SELECT * FROM gas_stations WHERE id = ?', {stationId}, function(result)
-        cb(result and #result > 0 and result[1] or nil)
-    end)
-end
-
-function GetStationEmployees(stationId, cb)
-    MySQL.query([[
-        SELECT e.*, u.firstname, u.lastname 
-        FROM gas_employees e
-        LEFT JOIN users u ON u.identifier = e.identifier
-        WHERE e.station_id = ?
-    ]], {stationId}, function(result)
-        cb(result or {})
-    end)
-end
-
-function GetStationTransactions(stationId, limit, cb)
-    MySQL.query([[
-        SELECT * FROM gas_transactions 
-        WHERE station_id = ? 
-        ORDER BY created_at DESC 
-        LIMIT ?
-    ]], {stationId, limit or 50}, function(result)
-        cb(result or {})
-    end)
-end
-
-function GetFuelSalesStats(stationId, period, cb)
-    local query = [[
-        SELECT 
-            COUNT(*) as total_sales,
-            SUM(liters) as total_liters,
-            SUM(total_cost) as total_revenue
-        FROM gas_fuel_sales
-        WHERE station_id = ?
-    ]]
-    
-    if period == 'today' then
-        query = query .. " AND DATE(created_at) = CURDATE()"
-    elseif period == 'week' then
-        query = query .. " AND created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)"
-    elseif period == 'month' then
-        query = query .. " AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)"
-    end
-    
-    MySQL.query(query, {stationId}, function(result)
-        cb(result and #result > 0 and result[1] or {total_sales = 0, total_liters = 0, total_revenue = 0})
-    end)
-end
-
-function AddTransaction(stationId, transType, amount, description, createdBy)
-    MySQL.insert([[
-        INSERT INTO gas_transactions (station_id, type, amount, description, created_by)
-        VALUES (?, ?, ?, ?, ?)
-    ]], {stationId, transType, amount, description, createdBy})
-end
-
-function UpdateStationMoney(stationId, amount)
-    MySQL.update('UPDATE gas_stations SET money = money + ? WHERE id = ?', {amount, stationId})
-end
-
-function UpdateStationFuel(stationId, amount)
-    MySQL.update('UPDATE gas_stations SET fuel_stock = fuel_stock + ? WHERE id = ?', {amount, stationId})
-end
-
-function IsStationOwner(identifier, stationId, cb)
-    MySQL.query('SELECT owner FROM gas_stations WHERE id = ?', {stationId}, function(result)
-        cb(result and #result > 0 and result[1].owner == identifier or false)
-    end)
-end
-
-function GetEmployeeRank(identifier, stationId, cb)
-    MySQL.query('SELECT `rank` FROM gas_employees WHERE identifier = ? AND station_id = ?', {
-        identifier, stationId
-    }, function(result)
-        if result and #result > 0 then
-            cb(result[1].rank)
-        else
-            IsStationOwner(identifier, stationId, function(isOwner)
-                cb(isOwner and 'owner' or nil)
-            end)
-        end
-    end)
-end
-
-function GetNearestStation(coords)
-    local nearestStation = nil
-    local nearestDist = 999999.0
-    
-    for _, station in ipairs(Config.Stations) do
-        local dist = #(coords - station.coords)
-        if dist < nearestDist then
-            nearestDist = dist
-            nearestStation = station
-        end
-    end
-    
-    return nearestStation, nearestDist
-end
