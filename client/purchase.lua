@@ -93,9 +93,38 @@ end)
 -- Request station owners on resource start
 Citizen.CreateThread(function()
     Wait(1000)
-    -- Get my identifier
-    ESX.TriggerServerCallback('mlfaGasStation:getMyIdentifier', function(identifier)
-        myIdentifier = identifier
+    
+    -- Try to get identifier from PlayerData first
+    local playerData = ESX.GetPlayerData()
+    if playerData and playerData.identifier then
+        myIdentifier = playerData.identifier
+        print('[PURCHASE] Identifier from PlayerData: ' .. tostring(myIdentifier))
+    end
+    
+    -- Fallback to callback if needed
+    if not myIdentifier then
+        ESX.TriggerServerCallback('mlfaGasStation:getMyIdentifier', function(identifier)
+            myIdentifier = identifier
+            print('[PURCHASE] Identifier from callback: ' .. tostring(identifier))
+        end)
+    end
+    
+    -- Retry loop
+    Citizen.CreateThread(function()
+        while myIdentifier == nil do
+            Wait(2000)
+            if ESX.IsPlayerLoaded() then
+                local pd = ESX.GetPlayerData()
+                if pd and pd.identifier then
+                    myIdentifier = pd.identifier
+                    print('[PURCHASE] Identifier found in retry loop')
+                else
+                    ESX.TriggerServerCallback('mlfaGasStation:getMyIdentifier', function(identifier)
+                        myIdentifier = identifier
+                    end)
+                end
+            end
+        end
     end)
     
     for _, station in ipairs(Config.Stations) do
@@ -103,6 +132,14 @@ Citizen.CreateThread(function()
             stationOwners[station.id] = owner
         end, station.id)
     end
+end)
+
+RegisterNetEvent('esx:playerLoaded')
+AddEventHandler('esx:playerLoaded', function(xPlayer)
+    ESX.TriggerServerCallback('mlfaGasStation:getMyIdentifier', function(identifier)
+        myIdentifier = identifier
+        print('[PURCHASE] Identifier updated (playerLoaded): ' .. tostring(identifier))
+    end)
 end)
 
 -- Purchase markers thread
@@ -174,5 +211,15 @@ RegisterCommand('debugpurchase', function(source, args)
         TriggerEvent('mlfaGasStation:purchaseSuccess', stationId)
     else
         print('[DEBUG] Usage: /debugpurchase [stationId]')
+    end
+end)
+
+RegisterCommand('forcebuy', function(source, args)
+    local stationId = tonumber(args[1])
+    if stationId then
+        print('[DEBUG] Forcing purchase for station ' .. stationId)
+        TriggerServerEvent('mlfaGasStation:purchaseStation', stationId)
+    else
+        print('[DEBUG] Usage: /forcebuy [stationId]')
     end
 end)

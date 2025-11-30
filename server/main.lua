@@ -244,13 +244,15 @@ end)
 RegisterNetEvent('mlfaGasStation:purchaseStation')
 AddEventHandler('mlfaGasStation:purchaseStation', function(stationId)
     local source = source
+    print('[GASSTATION] DEBUG: purchaseStation event received from source ' .. tostring(source) .. ' for station ' .. tostring(stationId))
+    
     local xPlayer = ESX.GetPlayerFromId(source)
     if not xPlayer then 
-        print('[GASSTATION] ERROR: Player not found for purchase')
+        print('[GASSTATION] ERROR: Player not found for purchase (source: ' .. tostring(source) .. ')')
         return 
     end
     
-    print('[GASSTATION] Purchase request from ' .. xPlayer.getName() .. ' for station ' .. stationId)
+    print('[GASSTATION] Purchase request from ' .. xPlayer.getName() .. ' (' .. xPlayer.identifier .. ') for station ' .. stationId)
     
     local purchasePrice = Config.StationPurchasePrice or 500000
     
